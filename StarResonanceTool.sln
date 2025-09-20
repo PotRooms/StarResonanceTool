@@ -1,0 +1,25 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.13.35931.197
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "StarResonanceTool", "StarResonanceTool\StarResonanceTool.csproj", "{ACD634C0-5BC3-4E42-BAF2-B84F4B807150}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{ACD634C0-5BC3-4E42-BAF2-B84F4B807150}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{ACD634C0-5BC3-4E42-BAF2-B84F4B807150}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{ACD634C0-5BC3-4E42-BAF2-B84F4B807150}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{ACD634C0-5BC3-4E42-BAF2-B84F4B807150}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {79439EA9-E41B-4352-BA4D-AEFAA8AE4101}
+	EndGlobalSection
+EndGlobal
