@@ -14,7 +14,7 @@ public class Program
 {
 	private static Dictionary<uint, string> _patchFileCache = new Dictionary<uint, string>();
 
-	private static void LoadPatchFileCache()
+	private static void LoadPatchFileCache(Dictionary<uint, PkgEntry> entries)
 	{
 		string patchDir = Path.Combine(MainApp.containerPath, "Patch");
 		if (Directory.Exists(patchDir))
@@ -25,6 +25,17 @@ public class Program
 				if (uint.TryParse(fileName, out uint key) && !_patchFileCache.ContainsKey(key))
 				{
 					_patchFileCache[key] = file;
+					if (!entries.ContainsKey(key))
+					{
+						entries[key] = new PkgEntry
+						{
+							Key = key,
+							Offset = 0,
+							Index = 0,
+							Length = (int)new FileInfo(file).Length,
+							Type = 0
+						};
+					}
 				}
 			}
 		}
@@ -99,7 +110,7 @@ public class Program
 			}
 		}
 
-		LoadPatchFileCache();
+		LoadPatchFileCache(entries);
 
 		return entries;
 	}
