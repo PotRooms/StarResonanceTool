@@ -12,8 +12,27 @@ namespace StarResonanceTool.PkgEntryReader;
 
 public class Program
 {
+	private static Dictionary<uint, string> _patchFileCache = new Dictionary<uint, string>();
+
+	private static void LoadPatchFileCache()
+	{
+		string patchDir = Path.Combine(MainApp.containerPath, "Patch");
+		if (Directory.Exists(patchDir))
+		{
+			foreach (var file in Directory.GetFiles(patchDir))
+			{
+				var fileName = Path.GetFileNameWithoutExtension(file);
+				if (uint.TryParse(fileName, out uint key) && !_patchFileCache.ContainsKey(key))
+				{
+					_patchFileCache[key] = file;
+				}
+			}
+		}
+	}
+
 	public struct PkgEntry
 	{
+		public uint Key;
 		public int Offset;
 		public ushort Index;
 		public int Length;
@@ -50,6 +69,7 @@ public class Program
 
 				entries[key] = new PkgEntry
 				{
+					Key = key,
 					Offset = offset,
 					Index = index,
 					Length = length,
@@ -70,6 +90,7 @@ public class Program
 
 				entries[key] = new PkgEntry
 				{
+					Key = key,
 					Offset = offset,
 					Index = index,
 					Length = length,
@@ -78,11 +99,19 @@ public class Program
 			}
 		}
 
+		LoadPatchFileCache();
+
 		return entries;
 	}
 
 	public static byte[] ReadFromEntry(PkgEntry entry)
 	{
+		if (_patchFileCache != null && _patchFileCache.TryGetValue(entry.Key, out var patchFile))
+		{
+			Console.WriteLine($"Read {entry.Key} from patch file: {patchFile}");
+			return File.ReadAllBytes(patchFile);
+		}
+
 		string containerPath = Path.Combine(MainApp.containerPath, $"m{entry.Index}.pkg");
 
 		if (!File.Exists(containerPath))
