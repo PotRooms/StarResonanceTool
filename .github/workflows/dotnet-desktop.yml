@@ -4,6 +4,7 @@ on:
   push:
     tags:
       - "v*"
+  workflow_dispatch:
 
 permissions:
   contents: write
@@ -26,14 +27,14 @@ jobs:
       - name: Build
         run: dotnet build StarResonanceTool.sln -c Release --no-restore
 
-      - name: Publish (self-contained, single file)
+      - name: Publish (self-contained)
         run: dotnet publish .\StarResonanceTool\StarResonanceTool.csproj -c Release -r win-x64 --self-contained true -p:PublishSingleFile=true -o .\out
 
       - name: Zip release asset
-        run: |
-          Compress-Archive -Path .\out\* -DestinationPath StarResonanceTool-win-x64.zip
+        run: Compress-Archive -Path .\out\* -DestinationPath StarResonanceTool-win-x64.zip
 
       - name: Create GitHub Release + upload asset
         uses: softprops/action-gh-release@v2
         with:
           files: StarResonanceTool-win-x64.zip
+          generate_release_notes: true
