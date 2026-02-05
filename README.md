@@ -41,12 +41,12 @@ StarResonanceTool.exe --all --assetbundles --dll "C:\Il2CppDumper\DummyDll" --ou
 The tool creates the following directory structure in the output folder:
 
 ```
-Excels/          # Parsed basic game data (.json files)
+ZTable/          # Parsed basic game data (.json files)
 output/
-├── bundles/     # Asset bundles (.ab files) - only if --assetbundles is used
-├── luas/        # Lua scripts (.luac files)
-├── unk/         # Other data files (.bin files)
-└── proto/       # Protocol buffer schemas (generated automatically)
+├── Bundles/     # Asset bundles (.ab files) - only if --assetbundles is used
+├── Lua/         # Lua scripts (.luac files)
+├── Unk/         # Other data files (.bin files)
+└── Proto/       # Protocol buffer schemas (generated automatically)
 ```
 
 ### File Types Processed
@@ -54,7 +54,7 @@ output/
 - **Asset Bundles:** Unity asset bundles (starts with "UnityFS")
 - **Lua Scripts:** Compiled Lua bytecode (starts with 0x1B4C7561)
 - **Protocol Buffers:** Proto files containing "proto2" or "proto3"
-- **Excels:** Json files containing the parsed ztables data
+- **ZTables:** Json files containing the parsed ztables data
 - **Other Data:** Various game data files
 
 ### Requirements

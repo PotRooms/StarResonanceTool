@@ -1,8 +1,6 @@
 ﻿// COPYRIGHT 2025 Hiro420
 
 using Newtonsoft.Json;
-// COPYRIGHT 2025 PotRooms
-
 using Newtonsoft.Json.Converters;
 using System;
 using System.Collections.Generic;
@@ -119,7 +117,7 @@ public class Program
 	{
 		if (_patchFileCache != null && _patchFileCache.TryGetValue(entry.Key, out var patchFile))
 		{
-			Console.WriteLine($"Read {entry.Key} from patch file: {patchFile}");
+			//Console.WriteLine($"Read {entry.Key} from patch file: {patchFile}");
 			return File.ReadAllBytes(patchFile);
 		}
 

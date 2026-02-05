@@ -11,7 +11,7 @@ using static StarResonanceTool.PkgEntryReader.Program;
 
 internal class TableParser
 {
-	private static readonly string outDir = "Excels";
+	private static readonly string outDir = "ZTable";
 
 	public void ParseFromName(string name, TypeDefinition targetType)
 	{
@@ -33,7 +33,7 @@ internal class TableParser
 
 		Console.WriteLine($"Parsing data for '{name}' ({data.Length} bytes)...");
 
-		Bokura_Table_ZLoader_o loader = new Bokura_Table_ZLoader_o(targetType);
+		BokuraTableLoader loader = new BokuraTableLoader(targetType);
 		Dictionary<long, Dictionary<string, object>> datas = loader.Load(data);
 
 		File.WriteAllText(Path.Combine(outDir, $"{name}.json"), JsonConvert.SerializeObject(datas, Formatting.Indented));

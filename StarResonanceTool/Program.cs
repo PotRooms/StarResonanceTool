@@ -6,11 +6,12 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using static StarResonanceTool.PkgEntryReader.Program;
-using static StarResonanceTool.ProtoModule;
 using System.Reflection.PortableExecutable;
 using Mono.Cecil;
-using Google.Protobuf.Reflection;
+using google.protobuf;
 using System.Text;
+using ProtoDescDumper.App;
+using ProtoDescDumper.Core;
 
 namespace StarResonanceTool;
 
@@ -105,9 +106,9 @@ internal class MainApp
 			parser.ParseFromName(tableName, targetType);
 		}
 
-		Directory.CreateDirectory(Path.Combine(basePath, "bundles"));
-		Directory.CreateDirectory(Path.Combine(basePath, "luas"));
-		Directory.CreateDirectory(Path.Combine(basePath, "unk"));
+		Directory.CreateDirectory(Path.Combine(basePath, "Bundles"));
+		Directory.CreateDirectory(Path.Combine(basePath, "Lua"));
+		Directory.CreateDirectory(Path.Combine(basePath, "Unk"));
 		// Apply filtering based on configuration
 
 		if (!config.ProcessAllEntries)
@@ -125,17 +126,18 @@ internal class MainApp
 			string outputPath;
 			if (StartsWith(data, "UnityFS")) // assetbundles, those are NOT in m0.pkg
 			{
-				outputPath = Path.Combine(basePath, "bundles", $"{key}.ab");
+				outputPath = Path.Combine(basePath, "Bundles", $"{key}.ab");
 				if (!config.ExtractAssetBundles)
 					continue; // skip asset bundles unless explicitly requested
 			}
 			else if (StartsWith(data, new byte[] { 0x1B, 0x4C, 0x75, 0x61 })) // Lua
 			{
-				outputPath = Path.Combine(basePath, "luas", $"{key}.luac");
+				LuaModule.OutputLua(basePath, data, key);
+				continue;
 			}
 			else // protobufs or tables etc
 			{
-				outputPath = Path.Combine(basePath, "unk", $"{key}.bin");
+				outputPath = Path.Combine(basePath, "Unk", $"{key}.bin");
 
 				if (ContainsString(data, "proto3") || ContainsString(data, "proto2"))
 					DumpProtoFromBin(data);
@@ -147,9 +149,6 @@ internal class MainApp
 			File.WriteAllBytes(outputPath, data);
 			Console.WriteLine($"Extracted {key} to {outputPath}");
 		}
-
-		// if you already have them split
-		LuaModule.RenameLuas(basePath);
 	}
 
 	public static void LoadLocalizationFromStream(Stream stream)
@@ -206,7 +205,7 @@ internal class MainApp
 	private static Config? ParseArguments(string[] args)
 	{
 		var config = new Config();
-		
+
 		for (int i = 0; i < args.Length; i++)
 		{
 			switch (args[i].ToLower())
@@ -214,7 +213,7 @@ internal class MainApp
 				case "-h":
 				case "--help":
 					return null;
-				
+
 				case "-p":
 				case "--pkg":
 					if (i + 1 >= args.Length)
@@ -224,7 +223,7 @@ internal class MainApp
 					}
 					config.PkgPath = args[++i];
 					break;
-				
+
 				case "-o":
 				case "--output":
 					if (i + 1 >= args.Length)
@@ -234,7 +233,7 @@ internal class MainApp
 					}
 					config.OutputPath = args[++i];
 					break;
-				
+
 				case "-d":
 				case "--dll":
 					if (i + 1 >= args.Length)
@@ -244,25 +243,25 @@ internal class MainApp
 					}
 					config.DummyDllPath = args[++i];
 					break;
-				
+
 				case "-a":
 				case "--assetbundles":
 					config.ExtractAssetBundles = true;
 					break;
-				
+
 				case "--all":
 					config.ProcessAllEntries = true;
 					break;
-				
+
 				default:
 					Console.Error.WriteLine($"Error: Unknown argument '{args[i]}'");
 					return null;
 			}
 		}
-		
+
 		return config;
 	}
-	
+
 	private static void PrintUsage()
 	{
 		Console.WriteLine("StarResonanceTool - Extract and process game assets");
@@ -286,19 +285,13 @@ internal class MainApp
 
 	private static void DumpProtoFromBin(byte[] data)
 	{
-		FileDescriptorSet set = TryParseFileDescriptorSet(data)
-							 ?? TryParseFileDescriptorSet(TryGunzip(data))
-							 ?? TryScanForEmbeddedFds(data)
-							 ?? TryScanForEmbeddedFds(TryGunzip(data));
 
-		if (set == null)
-		{
-			Console.Error.WriteLine("Could not parse a FileDescriptorSet from the input using any strategy.");
-			return;
-		}
+		var logger = new ConsoleLogger();
+		var fileSystem = new LocalFileSystem();
+		var coreService = new ProtoDescriptorService([], logger);
+		var app = new ProtoDumpService(fileSystem, logger, coreService, coreService);
 
-		var writer = new ProtoSchemaWriter();
-		var written = writer.WriteFiles(set, "proto");
+		app.Run(data, "Proto");
 	}
 
 	private static bool ContainsString(byte[] data, string text)
@@ -307,31 +300,4 @@ internal class MainApp
 		return str.Contains(text, StringComparison.Ordinal);
 	}
 
-	public static bool EndsWith(byte[] source, byte[] suffix)
-	{
-		// If either array is null, or if the suffix is longer than the source,
-		// it cannot end with the suffix.
-		if (source == null || suffix == null || suffix.Length > source.Length)
-		{
-			return false;
-		}
-
-		// If the suffix is empty, it's considered to end with it.
-		if (suffix.Length == 0)
-		{
-			return true;
-		}
-
-		// Compare the last 'suffix.Length' bytes of the source array
-		// with the bytes in the suffix array.
-		for (int i = 0; i < suffix.Length; i++)
-		{
-			if (source[source.Length - suffix.Length + i] != suffix[i])
-			{
-				return false; // Mismatch found
-			}
-		}
-
-		return true; // All bytes matched
-	}
 }
